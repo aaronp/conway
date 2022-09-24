@@ -1,0 +1,9 @@
+# sbt target folders
+target/
+
+# eclipse project files
+node_modules
+package-lock.json
+package.json
+.bsp
+.idea
