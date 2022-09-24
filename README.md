@@ -1,3 +1,6 @@
-# The Scala.js tutorial
+# Conway's Game of Life
 
-This repository contains the code accompanying the [Scala.js tutorial](http://www.scala-js.org/doc/tutorial.html)
+An implementation of [Conway's game of Life](https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life) using Scala3
+
+## Resources
+ * See [hands-on-scala](http://www.lihaoyi.com/hands-on-scala-js/)
