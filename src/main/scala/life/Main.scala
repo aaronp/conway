@@ -14,6 +14,6 @@ object Main {
     renderer.expandToFill
     renderer.clear("grey")
 
-    Grid.init(renderer, 40)
+    Grid.init(renderer, 20)
   }
 }

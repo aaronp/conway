@@ -3,11 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <title>The Scala.js Tutorial</title>
+    <!-- see https://css-tricks.com/making-pure-css-playpause-button/ -->
+
 </head>
 <body>
 <!-- Include Scala.js compiled code -->
 <script type="text/javascript" src="./target/scala-3.2.0/life-fastopt/main.js"></script>
-<canvas id="canvas" width="255" height="255"></canvas>
+<div style="text-align: center;margin-left:auto;margin-right:auto">
+    <canvas id="canvas" width="255" height="255"></canvas>
+</div>
 <script>Main.apply(document.getElementById("canvas"))</script>
 </body>
 </html>

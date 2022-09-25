@@ -1,11 +1,16 @@
 package life
 
 opaque type Row = Int
+
 object Row:
+  def toInt(row : Row): Int = row
   def apply(r: Int): Row = r
 
 opaque type Col = Int
+
+
 object Col:
+  def toInt(col : Col): Int = col
   def apply(c: Int): Col = c
 
 extension (num: Int)
@@ -23,11 +28,41 @@ object BoardRow:
 
 extension (row: BoardRow) def width = row.maxOption.getOrElse(0)
 
+case class Diff(toggledAlive :Set[(Row, Col)], toggledDead :Set[(Row, Col)])
+
 opaque type Board = Map[Row, BoardRow]
 extension (board: Board)
   def height = board.keySet.maxOption.getOrElse(0)
 
+  def diff(after : Board): Diff =
+    val toggledDead = {
+      val removedRows = board.keySet -- after.keySet
+      val removedCells: Set[(Row, Col)] = removedRows.flatMap { r =>
+        board(r).map(r -> _)
+      }
+      val others = (board.keySet & after.keySet).flatMap { r =>
+        val removed = board(r) -- after(r)
+        removed.map(r -> _)
+      }
+      removedCells ++ others
+    }
+
+    val toggledAlive = {
+      val addedRows = after.keySet -- board.keySet
+      val addedCells: Set[(Row, Col)] = addedRows.flatMap { r =>
+        after(r).map(r -> _)
+      }
+      val others = (board.keySet & after.keySet).flatMap { r =>
+        val added = after(r) -- board(r)
+        added.map(r -> _)
+      }
+      addedCells ++ others
+    }
+    Diff(toggledAlive, toggledDead)
+
   def isAlive(row: Row, col: Col): Boolean = board.get(row).exists(r => r(col))
+
+  def aliveCells : Map[Row, BoardRow] = board
 
   /** Any live cell with two or three live neighbours survives. Any dead cell with three live neighbours becomes a live cell. All other live cells die in the
     * next generation. Similarly, all other dead cells stay dead.
@@ -76,7 +111,15 @@ extension (board: Board)
     }
     toggledRowsByIndex.toMap
 
-  def allNeighbours(row: Row, col: Col) = LazyList(
+  def toggle(row: Row, col: Col): Board =
+    val newRow = board.get(row) match {
+      case None => Set(col)
+      case Some(boardRow) if board.isAlive(row, col) => boardRow - col
+      case Some(boardRow) => boardRow + col
+    }
+    board.updated(row, newRow)
+
+  private def allNeighbours(row: Row, col: Col) = LazyList(
     (row - 1, col - 1),
     (row - 1, col),
     (row - 1, col + 1),
@@ -94,18 +137,18 @@ extension (board: Board)
     * @return
     *   the number of alive neighbours for the given coordinates
     */
-  def aliveNeighbours(row: Row, col: Col): Int = allNeighbours(row, col).count(isAlive)
+  private def aliveNeighbours(row: Row, col: Col): Int = allNeighbours(row, col).count(isAlive)
 
   // Any live cell with two or three live neighbours survives.
-  def survives(row: Row, col: Col) =
+  private def survives(row: Row, col: Col) =
     val count = board.aliveNeighbours(row, col)
     count == 2 || count == 3
 
-  def becomesAlive(row: Row, col: Col) = board.aliveNeighbours(row, col) == 3
+  private def becomesAlive(row: Row, col: Col) = board.aliveNeighbours(row, col) == 3
 
-  def rowWidth(r: Row) = board.get(r).map(_.width).getOrElse(0)
+  private def rowWidth(r: Row) = board.get(r).map(_.width).getOrElse(0)
 
-  def maxWidth: Int = (0 to board.height).map(r => rowWidth(r.asRow)).maxOption.getOrElse(0)
+  private def maxWidth: Int = (0 to board.height).map(r => rowWidth(r.asRow)).maxOption.getOrElse(0)
 
   def render(deadChar: Char = 'x', aliveChar: Char = 'o'): String =
     val maxWidthVal = maxWidth

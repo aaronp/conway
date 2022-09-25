@@ -20,6 +20,39 @@ class BoardTest extends AnyWordSpec with Matchers {
       Board.cellNeighbours(Set()) shouldBe Set()
     }
   }
+  "Board.diff" should {
+    "return the difference between two boards" in {
+      val board1 = Board.parse(
+        """...o
+          |.oo.
+          |...o
+          |....""".stripMargin,
+        'o'
+      )
+      val board2 = Board.parse(
+        """....
+          |oo..
+          |...o
+          |o..o""".stripMargin,
+        'o'
+      )
+
+      locally {
+        val created: Set[(Row, Col)] = Set((3, 0), (3, 3), (1, 0)).map((r, c) => (r.asRow, c.asCol))
+        val removed = Set((1.asRow, 2.asCol), (0.asRow, 3.asCol))
+        board1.diff(board2) shouldBe Diff(created, removed)
+      }
+
+      locally {
+        val created = Set((1.asRow, 2.asCol), (0.asRow, 3.asCol))
+        val removed: Set[(Row, Col)] = Set((3, 0), (3, 3), (1, 0)).map((r, c) => (r.asRow, c.asCol))
+        board2.diff(board1) shouldBe Diff(created, removed)
+      }
+
+      board1.diff(board1) shouldBe Diff(Set.empty, Set.empty)
+      board2.diff(board2) shouldBe Diff(Set.empty, Set.empty)
+    }
+  }
   "Board.advance" should {
 
     def verify(original: Board, expected: Board) =
