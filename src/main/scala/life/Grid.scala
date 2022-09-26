@@ -153,7 +153,8 @@ object Grid:
 
     val loadButton = button()("Load").render
     loadButton.onclick = _ => {
-      updateBoard(Board.parse(gridInput.value, 'o'))
+      // the toLowerCase is because some conway examples use upper-case Os
+      updateBoard(Board.parse(gridInput.value.toLowerCase, 'o'))
     }
 
     val playButton = button()("Play").render

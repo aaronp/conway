@@ -45,8 +45,35 @@ class BoardTest extends AnyWordSpec with Matchers {
       board2.diff(board2) shouldBe Diff(Set.empty, Set.empty)
     }
   }
-  "Board.advance" should {
 
+  "Board.parse" should {
+    "work for advanced shapes" in {
+      Board.parse("""....oo
+                    |....o.o
+                    |....o
+                    |.......o
+                    |ooo....o.o
+                    |o......o..o...ooo
+                    |.o.......oo..o..oo
+                    |...ooo.......o.....oo
+                    |.............oo....ooo
+                    |....o.o...ooo.........o
+                    |.....oo..o..o......o..o
+                    |.........o.........o
+                    |.........oo........o.o
+                    |......ooo
+                    |.....o..o
+                    |.....o
+                    |.....oo
+                    |......o
+                    |
+                    |.......oo.ooo
+                    |.......oo
+                    |........o...o
+                    |.........oo""".stripMargin, 'o')
+    }
+  }
+  "Board.advance" should {
     def verifyAdvance(original: Board, expected: Board) =
       withClue(s"${original.advance.render()}\nshould be\n${expected.render()}\n") {
         original.advance shouldBe expected
