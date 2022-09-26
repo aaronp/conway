@@ -4,3 +4,5 @@ An implementation of [Conway's game of Life](https://en.wikipedia.org/wiki/Conwa
 
 ## Resources
  * See [hands-on-scala](http://www.lihaoyi.com/hands-on-scala-js/)
+ * [conwaylife.com](conwaylife.com)
+ * Conways Models [https://conwaylife.com/patterns/hwss.cells](https://conwaylife.com/patterns/hwss.cells)
