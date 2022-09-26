@@ -12,14 +12,6 @@ class BoardTest extends AnyWordSpec with Matchers {
     'o'
   )
 
-  "Board.cellNeighbours" should {
-    "return indices adjacent to alive cells" in {
-      Board.cellNeighbours(Set(2, 3, 5).map(_.asCol)) shouldBe Set(1, 4, 6)
-      Board.cellNeighbours(Set(0).map(_.asCol)) shouldBe Set(-1, 1)
-      Board.cellNeighbours(Set(2, 4).map(_.asCol)) shouldBe Set(1, 3, 5)
-      Board.cellNeighbours(Set()) shouldBe Set()
-    }
-  }
   "Board.diff" should {
     "return the difference between two boards" in {
       val board1 = Board.parse(
@@ -55,11 +47,54 @@ class BoardTest extends AnyWordSpec with Matchers {
   }
   "Board.advance" should {
 
-    def verify(original: Board, expected: Board) =
-      withClue(s"${original.advance.render()} shouldBe ${expected.render()}") {
+    def verifyAdvance(original: Board, expected: Board) =
+      withClue(s"${original.advance.render()}\nshould be\n${expected.render()}\n") {
         original.advance shouldBe expected
       }
 
+    "work for the glider" in {
+      val glider1 = Board.parse(
+        """..o..
+          |...o.
+          |.ooo.
+          |.....
+          |.....""".stripMargin,
+        'o'
+      )
+      glider1.becomesAlive(1.asRow, 1.asCol) shouldBe true
+      glider1.becomesAlive(1.asRow, 2.asCol) shouldBe false
+      glider1.survives(2.asRow, 1.asCol) shouldBe false
+      glider1.survives(2.asRow, 2.asCol) shouldBe true
+
+      val glider2 = Board.parse(
+        """.....
+          |.o.o.
+          |..oo.
+          |..o..
+          |.....""".stripMargin,
+        'o'
+      )
+      val glider3 = Board.parse(
+        """.....
+          |...o.
+          |.o.o.
+          |..oo.
+          |.....""".stripMargin,
+        'o'
+      )
+      val glider4 = Board.parse(
+        """......
+          |..o...
+          |...oo.
+          |..oo..
+          |......""".stripMargin,
+        'o'
+      )
+
+      verifyAdvance(glider1, glider2)
+      verifyAdvance(glider2, glider3)
+      verifyAdvance(glider3, glider4)
+    }
     "toggle oscillator cells" in {
       val oscillator1 = Board.parse(
         """.....
@@ -79,8 +114,8 @@ class BoardTest extends AnyWordSpec with Matchers {
         'o'
       )
 
-      verify(oscillator1, oscillator2)
-      verify(oscillator2, oscillator1)
+      verifyAdvance(oscillator1, oscillator2)
+      verifyAdvance(oscillator2, oscillator1)
       oscillator1 should not be (oscillator2)
     }
 
@@ -92,7 +127,7 @@ class BoardTest extends AnyWordSpec with Matchers {
           |....""".stripMargin,
         'o'
       )
-      verify(block, block)
+      verifyAdvance(block, block)
     }
 
     "toggle toad cells" in {
@@ -116,8 +151,8 @@ class BoardTest extends AnyWordSpec with Matchers {
         'o'
       )
 
-      verify(toad1, toad2)
-      verify(toad2, toad1)
+      verifyAdvance(toad1, toad2)
+      verifyAdvance(toad2, toad1)
       toad1 should not be (toad2)
     }
   }

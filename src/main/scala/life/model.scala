@@ -26,7 +26,14 @@ object BoardRow:
     }
     byCol.toSet
 
-extension (row: BoardRow) def width = row.maxOption.getOrElse(0)
+extension (row: BoardRow)
+  def width = row.maxOption.getOrElse(0)
+  def pretty =
+    val rowStr = (0 to row.width).map {
+      case c if row(c) => 'o'
+      case _ => '.'
+    }
+    rowStr.mkString("")
 
 case class Diff(toggledAlive :Set[(Row, Col)], toggledDead :Set[(Row, Col)])
 
@@ -71,18 +78,10 @@ extension (board: Board)
     *   the 'next' board given the above rules
     */
   def advance: Board =
-    /** @param row
-      *   the row index
-      * @param aliveCells
-      *   the currently alive cells in this row
-      * @param deadCells
-      *   the dead cells to consider (i.e. neighbours to the alive cells)
-      * @return
-      *   all the alive cells for this row
-      */
-    def toggleRow(row: Row, aliveCells: BoardRow, deadCells: BoardRow): BoardRow =
+    def applyRulesToRow(row: Row, aliveCells: BoardRow, deadCells: BoardRow): BoardRow =
       // Any live cell with two or three live neighbours survives.
       val survivingCells   = aliveCells.filter(col => survives(row, col))
+      // Any dead cell with three live neighbours becomes a live cell
       val resurrectedCells = deadCells.filter(col => becomesAlive(row, col))
 
       // All other live cells die in the next generation. Similarly, all other dead cells stay dead.
@@ -104,13 +103,24 @@ extension (board: Board)
       val mappedRow = board.get(rowIndex) match {
         // for the 'None' case, we're on a row above or below a row with alive cells.
         // we need to consider the columns of the alive neighbouring rows (or just brute-force for simplicity and take the perf hit)
-        case None             => toggleRow(rowIndex, Set.empty, deadRow)
-        case Some(aliveCells) => toggleRow(rowIndex, aliveCells, Board.cellNeighbours(aliveCells))
+        case None             => applyRulesToRow(rowIndex, Set.empty, deadRow)
+        case Some(thisRowsAliveCells) =>
+          // the dead neighbours are this row's alive neighbours PLUS cells which may be neighbours to rows above and below
+          val cellsToCheck = {
+            val rowAbove = board.getOrElse(rowIndex - 1, Set.empty)
+            val rowBellow = board.getOrElse(rowIndex + 1, Set.empty)
+            Board.rowNeighbours(thisRowsAliveCells ++ rowAbove ++ rowBellow)
+          }
+          val deadNeighbours = cellsToCheck -- thisRowsAliveCells
+          applyRulesToRow(rowIndex, thisRowsAliveCells, deadNeighbours)
       }
       if mappedRow.isEmpty then None else Some(rowIndex -> mappedRow)
     }
     toggledRowsByIndex.toMap
 
+  /**
+   * @return a new board with the cell at the given row and col switched e.g. alive becomes dead and dead becomes alive
+   */
   def toggle(row: Row, col: Col): Board =
     val newRow = board.get(row) match {
       case None => Set(col)
@@ -130,27 +140,20 @@ extension (board: Board)
     (row + 1, col + 1)
   )
 
-  /** @param row
-    *   the row
-    * @param col
-    *   the col
-    * @return
-    *   the number of alive neighbours for the given coordinates
-    */
   private def aliveNeighbours(row: Row, col: Col): Int = allNeighbours(row, col).count(isAlive)
 
   // Any live cell with two or three live neighbours survives.
-  private def survives(row: Row, col: Col) =
+  private[life] def survives(row: Row, col: Col) =
     val count = board.aliveNeighbours(row, col)
     count == 2 || count == 3
 
-  private def becomesAlive(row: Row, col: Col) = board.aliveNeighbours(row, col) == 3
+  private[life] def becomesAlive(row: Row, col: Col) = board.aliveNeighbours(row, col) == 3
 
   private def rowWidth(r: Row) = board.get(r).map(_.width).getOrElse(0)
 
   private def maxWidth: Int = (0 to board.height).map(r => rowWidth(r.asRow)).maxOption.getOrElse(0)
 
-  def render(deadChar: Char = 'x', aliveChar: Char = 'o'): String =
+  def render(deadChar: Char = '.', aliveChar: Char = 'o'): String =
     val maxWidthVal = maxWidth
     val rows = (0 to height).map { r =>
       val rowStr = (0 to maxWidthVal).map {
@@ -162,11 +165,10 @@ extension (board: Board)
     rows.mkString("\n")
 
 object Board:
-  private[life] def cellNeighbours(aliveCells: BoardRow) =
-    val neighbours = aliveCells.flatMap { col =>
-      Set(col - 1, col + 1)
-    }
-    neighbours -- aliveCells
+
+  private[life] def rowNeighbours(cells: BoardRow): Set[Int] = cells.flatMap { col =>
+    Set(col - 1, col, col + 1)
+  }
 
   def apply() : Board = Map.empty
   def parse(text: String, aliveChar: Char): Board =
