@@ -1,7 +1,7 @@
-package life
+package life.ui
 
+import org.scalajs.dom.CanvasRenderingContext2D
 import org.scalajs.dom.html.Canvas
-import org.scalajs.dom.{CanvasRenderingContext2D, MouseEvent, document}
 
 import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
 
@@ -12,8 +12,8 @@ object Main {
 
     val renderer = canvas.getContext("2d").asInstanceOf[CanvasRenderingContext2D]
     renderer.expandToFill
-    renderer.clear("grey")
+    renderer.clear(Grid.DeadColor)
 
-    Grid.init(renderer, 20)
+    Grid.init(renderer, 15)
   }
 }

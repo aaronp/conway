@@ -1,4 +1,4 @@
-package life
+package life.ui
 
 import org.scalajs.dom.CanvasRenderingContext2D
 

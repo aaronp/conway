@@ -1,8 +1,11 @@
-package life
+package life.ui
 
+import life.*
 import org.scalajs.dom
 import org.scalajs.dom.*
-import org.scalajs.dom.html.{Input, Label}
+
+import scala.collection.immutable
+// import scalatags.JsDom.all.*
 import scalatags.JsDom.all.*
 
 class Grid private(context: CanvasRenderingContext2D, cellSize: Int):
@@ -16,7 +19,7 @@ class Grid private(context: CanvasRenderingContext2D, cellSize: Int):
     val y = Row.toInt(row) * cellSize
     val x = Col.toInt(col) * cellSize
     context.withColor(color) {
-      context.fillRect(x, y, cellSize, cellSize)
+      context.fillRect(x + 1, y + 1, cellSize - 2, cellSize - 2)
     }
   }
 
@@ -52,8 +55,8 @@ end Grid
 
 object Grid:
 
-  private val AliveColor = "green"
-  private val DeadColor = "yellow"
+  val AliveColor = "green"
+  val DeadColor = "white"
 
   def init(context: CanvasRenderingContext2D, cellSize: Int) =
     var board = Board()
@@ -64,7 +67,7 @@ object Grid:
       case Erase
       case Toggle
 
-    def scaleSize(dim: Double, scale : Double) =
+    def scaleSize(dim: Double, scale: Double) =
       val scaled = dim * scale
       (scaled - (scaled % cellSize)).toInt
 
@@ -74,7 +77,7 @@ object Grid:
     val grid = Grid(context, cellSize)
     grid.plotGridLines()
 
-    val gridInput = textarea(rows := 8, cols := 20).render
+    val gridInput = textarea(rows := 10, cols := 40).render
 
     def updateBoard(newBoard: Board) =
       val diff = board.diff(newBoard)
@@ -93,7 +96,7 @@ object Grid:
 
     object state {
       var lastDragCoords: Option[(Row, Col)] = None // (row, col)
-      var dragMode: DragMode = DragMode.Draw
+      var dragMode: DragMode = DragMode.Toggle
       var playHandle = -1 // used for auto-play
     }
 
@@ -123,39 +126,36 @@ object Grid:
     }
 
     // radios
-    locally {
+    val mouseDragBehaviour = {
       def newRadio(labelText: String, radioValue: DragMode) = {
         val selected = radioValue == state.dragMode
-        val inputButton = input(`type` := "radio", id := labelText.filter(_.isLetter) + "ID", value := radioValue.toString, name := "draw_type", checked := selected).render
+        val inputButton = input(`type` := "radio", style := "margin-right:20px", id := labelText.filter(_.isLetter) + "ID", value := radioValue.toString, name := "draw_type", checked := selected).render
 
-        inputButton.onclick = (_) => {
-          state.dragMode = radioValue
-        }
-        val inputLabel = label(`for` := inputButton.id)(labelText).render
-        div(
-          inputLabel,
+        inputButton.onclick = _ => state.dragMode = radioValue
+
+        span(
+          label(`for` := inputButton.id)(labelText),
           inputButton
         )
       }
 
-      document.body.appendChild(
-        div(
-          h4("Mouse Click/Drag Behaviour:"),
-          newRadio("Draw", DragMode.Draw),
-          newRadio("Erase", DragMode.Erase),
-          newRadio("Toggle", DragMode.Toggle)
-        ).render
+      div(
+        span(style := "margin-right:20px")("Mouse Click/Drag Behaviour:"),
+        newRadio("Toggle", DragMode.Toggle),
+        newRadio("Draw", DragMode.Draw),
+        newRadio("Erase", DragMode.Erase)
       )
     }
 
     val advanceButton = button()("Advance").render
     advanceButton.onclick = _ => updateBoard(board.advance)
 
+    // the toLowerCase is because some conway examples use upper-case Os
+    def loadBoardFromText(boardText: String = gridInput.value.toLowerCase) =
+      updateBoard(Board.parse(boardText, 'o'))
+
     val loadButton = button()("Load").render
-    loadButton.onclick = _ => {
-      // the toLowerCase is because some conway examples use upper-case Os
-      updateBoard(Board.parse(gridInput.value.toLowerCase, 'o'))
-    }
+    loadButton.onclick = _ => loadBoardFromText()
 
     val playButton = button()("Play").render
 
@@ -163,7 +163,7 @@ object Grid:
       playButton.innerText = "Pause"
       state.playHandle = window.setInterval(() => {
         updateBoard(board.advance)
-      }, 250)
+      }, 150)
 
     def stopAnimation() =
       window.clearInterval(state.playHandle)
@@ -174,17 +174,29 @@ object Grid:
       if state.playHandle == -1 then startAnimation() else stopAnimation()
     }
 
+    val conwaySelect = {
+      val patternByName = ModelRefData().toList.sortBy(_._1)
+      val options = patternByName.map((key, _) => option(value := key)(key))
+      val selectButton = select(name := "conwayOptions", id := "conwayOptionsId").apply(options.toList: _*).render
+      selectButton.onchange = (_) => {
+        val (_, pattern) = patternByName(selectButton.selectedIndex)
+        gridInput.value = pattern
+        loadBoardFromText(pattern)
+      }
+
+      div()(
+        label(`for` := "conwayOptions"),
+        selectButton
+      )
+    }
     document.body.appendChild(div(
-      br(),
-      advanceButton, span(width := 200)(" "), playButton,
+      advanceButton, span(style := "width:200px")(" "), playButton,
       div(
         gridInput,
-        br(),
-        loadButton
+        div(conwaySelect),
+        div(loadButton),
+        mouseDragBehaviour
       )
     ).render)
-
-    // ooh! These are fun:
-    // https://alvarotrigo.com/blog/toggle-switch-css/
 
     grid
