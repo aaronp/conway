@@ -1,4 +1,6 @@
 # Conway's Game of Life
+![https://github.com/aaronp/conway/actions](https://github.com/aaronp/conway/actions/workflows/test.yml/badge.svg)
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 An implementation of [Conway's game of Life](https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life) using Scala3.
 
