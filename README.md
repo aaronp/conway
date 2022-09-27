@@ -4,6 +4,21 @@ An implementation of [Conway's game of Life](https://en.wikipedia.org/wiki/Conwa
 
 You can [play with this implementation here](https://aaronp.github.io/conway)
 
+# Implementation
+
+The code is in [model.scala](src/main/scala/life/model.scala).
+
+It makes liberal use of scala3 features such as `opaque types`.
+
+This helps catch a lot of silly errors at compile time (e.g. confusing a Row with a Col, both of which are just Ints).
+
+The `Board` itself is an opaque type as well, which models the board as a map of rows by their row index.
+This was chosen as the active cells are typically quite sparse (that is, the alive cells vastly outnumber the dead cells).
+This has some interesting implications:
+ * the rule-checking significantly faster
+ * the board doesn't have to be a 2x2 matrix, but can easily support differently-sized rows, or rows which are thousands of columns at no additional cost
+ * it makes some of the boundary checking easier, and the code (hopefully) more easy to reason about
+
 ## Run Locally
 Using [sbt](https://www.scala-sbt.org/):
 ```sbt fullOptJS``` and open [life.html](life.html)
