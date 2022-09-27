@@ -1,6 +1,8 @@
 # Conway's Game of Life
 
-An implementation of [Conway's game of Life](https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life) using Scala3
+An implementation of [Conway's game of Life](https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life) using Scala3.
+
+You can [play with this implementation here](https://aaronp.github.io/conway)
 
 ## Run Locally
 Using [sbt](https://www.scala-sbt.org/):
