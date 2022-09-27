@@ -48,29 +48,30 @@ class BoardTest extends AnyWordSpec with Matchers {
 
   "Board.parse" should {
     "work for advanced shapes" in {
-      Board.parse("""....oo
-                    |....o.o
-                    |....o
-                    |.......o
-                    |ooo....o.o
-                    |o......o..o...ooo
-                    |.o.......oo..o..oo
-                    |...ooo.......o.....oo
-                    |.............oo....ooo
-                    |....o.o...ooo.........o
-                    |.....oo..o..o......o..o
-                    |.........o.........o
-                    |.........oo........o.o
-                    |......ooo
-                    |.....o..o
-                    |.....o
-                    |.....oo
-                    |......o
-                    |
-                    |.......oo.ooo
-                    |.......oo
-                    |........o...o
-                    |.........oo""".stripMargin, 'o')
+      val shape =
+        """....oo
+          |....o.o
+          |....o
+          |.......o
+          |ooo....o.o
+          |o......o..o...ooo
+          |.o.......oo..o..oo
+          |...ooo.......o.....oo
+          |.............oo....ooo
+          |....o.o...ooo.........o
+          |.....oo..o..o......o..o
+          |.........o.........o
+          |.........oo........o.o
+          |......ooo
+          |.....o..o
+          |.....o
+          |.....oo
+          |......o
+          |.......oo.ooo
+          |.......oo
+          |........o...o
+          |.........oo""".stripMargin
+      Board.parse(shape, 'o').render('.', 'o') shouldBe shape
     }
   }
   "Board.advance" should {

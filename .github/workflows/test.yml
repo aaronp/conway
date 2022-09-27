@@ -1,0 +1,8 @@
+- name: test model
+  id: sbt
+  uses: lokkju/github-action-sbt@master
+  run-name: ${{ github.actor }} is testing 🚀
+  on: [push]
+  with:
+    commands: test
+    sbt_project_directory: ./

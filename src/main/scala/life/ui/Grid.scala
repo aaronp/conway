@@ -147,7 +147,7 @@ object Grid:
       )
     }
 
-    val advanceButton = button()("Advance").render
+    val advanceButton = button()("Advance One").render
     advanceButton.onclick = _ => updateBoard(board.advance)
 
     // the toLowerCase is because some conway examples use upper-case Os
@@ -190,7 +190,7 @@ object Grid:
       )
     }
     document.body.appendChild(div(
-      advanceButton, span(style := "width:200px")(" "), playButton,
+      playButton, span(style := "width:200px")(" "), advanceButton,
       div(
         gridInput,
         div(conwaySelect),
