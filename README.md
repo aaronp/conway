@@ -2,15 +2,15 @@
 
 An implementation of [Conway's game of Life](https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life) using Scala3.
 
-You can play w/ this code [here](https://aaronp.github.io/conway).
+You can play a live version of this code [here](https://aaronp.github.io/conway).
 
 # Implementation
 
-The code is in [model.scala](src/main/scala/life/model.scala).
+The main code is in [model.scala](src/main/scala/life/model.scala), where the test harness is under the [ui package](src/main/scala/life/ui).
 
-It makes liberal use of scala3 features such as `opaque types`.
+The implementation makes liberal use of scala3 features - particularly `opaque types` and `extension methods`.
 
-This helps catch a lot of silly errors at compile time (e.g. confusing a Row with a Col, both of which are just Ints).
+Opaque types help catch a number of silly errors at compile time (e.g. confusing a Row with a Col, both of which are just Ints), and really help in refactoring. I've found them very useful in most applications for dealing with e.g. "stringly-typed" data.
 
 The `Board` itself is an opaque type as well, which models the board as a map of rows by their row index:
 ```
@@ -22,22 +22,23 @@ opaque type Board = Map[Row, BoardRow]
 case class Diff(toggledAlive :Set[(Row, Col)], toggledDead :Set[(Row, Col)])
 ```
 
-This was chosen as the active cells are typically quite sparse (that is, the alive cells vastly outnumber the dead cells).
+This approach was chosen over something like a 2x2 matrix as the active cells are typically quite sparse (that is, the alive cells vastly outnumber the dead cells).
+
 This has some interesting implications:
  * the rule-checking significantly faster
  * the board doesn't have to be a 2x2 matrix, but can easily support differently-sized rows, or rows which are thousands of columns at no additional cost
  * it makes some of the boundary checking easier, and the code (hopefully) more easy to reason about
 
 
-Where the 'Board' provides most of the functionality via `extension`s:
+The 'Board' extension provides the key functionality:
 ```
 extension (board: Board)
   // provides a delta between this and another boards
   def diff(after : Board): Diff = ...
   // returns a new board with the game rules applied 
   def advance: Board = ...
-  // turn this board back into ascii text
-  def render(deadChar: Char = '.', aliveChar: Char = 'o'): String =
+  // turn this board back into ascii text (See Board.parse(ascii: String) to turn it back again)
+  def render(deadChar: Char = '.', aliveChar: Char = 'o'): String = ...
 ```
 
 The board companion object knows how to parse text:
