@@ -8,7 +8,6 @@ object Row:
 
 opaque type Col = Int
 
-
 object Col:
   def toInt(col : Col): Int = col
   def apply(c: Int): Col = c
@@ -18,7 +17,7 @@ extension (num: Int)
   def asCol = Col(num)
 
 // the alive cells
-type BoardRow = Set[Col]
+opaque type BoardRow = Set[Col]
 object BoardRow:
   def parse(text: String, aliveChar: Char): BoardRow =
     val byCol = text.zipWithIndex.collect { case (`aliveChar`, idx) =>
@@ -28,6 +27,7 @@ object BoardRow:
 
 extension (row: BoardRow)
   def width = row.maxOption.getOrElse(0)
+  def isEmpty = row.isEmpty
   def pretty =
     val rowStr = (0 to row.width).map {
       case c if row(c) => 'o'
@@ -41,6 +41,11 @@ opaque type Board = Map[Row, BoardRow]
 extension (board: Board)
   def height = board.keySet.maxOption.getOrElse(0)
 
+  /**
+   * This is used so that cells can be toggled on/off after an update
+   * @param after
+   * @return the diff between the two boards
+   */
   def diff(after : Board): Diff =
     val toggledDead = {
       val removedRows = board.keySet -- after.keySet

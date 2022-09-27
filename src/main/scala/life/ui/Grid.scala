@@ -63,7 +63,7 @@ object Grid:
     import context.canvas
 
     enum DragMode:
-      case Draw
+      case Overwrite
       case Erase
       case Toggle
 
@@ -71,7 +71,7 @@ object Grid:
       val scaled = dim * scale
       (scaled - (scaled % cellSize)).toInt
 
-    canvas.width = scaleSize(window.innerWidth, 0.8)
+    canvas.width = scaleSize(window.innerWidth, 0.9)
     canvas.height = scaleSize(window.innerHeight, 0.6)
 
     val grid = Grid(context, cellSize)
@@ -87,8 +87,8 @@ object Grid:
 
     def toggleBoard(dragMode: DragMode, row: Row, col: Col) =
       dragMode match {
-        case DragMode.Draw if !board.isAlive(row, col) => updateBoard(board.toggle(row, col))
-        case DragMode.Draw => // no-op
+        case DragMode.Overwrite if !board.isAlive(row, col) => updateBoard(board.toggle(row, col))
+        case DragMode.Overwrite => // no-op
         case DragMode.Erase if board.isAlive(row, col) => updateBoard(board.toggle(row, col))
         case DragMode.Erase => // no-op
         case DragMode.Toggle => updateBoard(board.toggle(row, col))
@@ -127,12 +127,17 @@ object Grid:
 
     // radios
     val mouseDragBehaviour = {
-      def newRadio(labelText: String, radioValue: DragMode) = {
-        val selected = radioValue == state.dragMode
-        val inputButton = input(`type` := "radio", style := "margin-right:20px", id := labelText.filter(_.isLetter) + "ID", value := radioValue.toString, name := "draw_type", checked := selected).render
+      def newRadio(radioValue: DragMode) = {
+
+        val inputButton = input(`type` := "radio", style := "margin-right:20px", id := radioValue.toString + "ID", value := radioValue.toString, name := "draw_type").render
+        if radioValue == state.dragMode then inputButton.checked = true
 
         inputButton.onclick = _ => state.dragMode = radioValue
 
+        val labelText = radioValue match {
+          case DragMode.Toggle => "Toggle Cell"
+          case other => other.toString
+        }
         span(
           label(`for` := inputButton.id)(labelText),
           inputButton
@@ -141,9 +146,9 @@ object Grid:
 
       div(
         span(style := "margin-right:20px")("Mouse Click/Drag Behaviour:"),
-        newRadio("Toggle", DragMode.Toggle),
-        newRadio("Draw", DragMode.Draw),
-        newRadio("Erase", DragMode.Erase)
+        newRadio(DragMode.Toggle),
+        newRadio(DragMode.Overwrite),
+        newRadio(DragMode.Erase)
       )
     }
 
@@ -154,21 +159,25 @@ object Grid:
     def loadBoardFromText(boardText: String = gridInput.value.toLowerCase) =
       updateBoard(Board.parse(boardText, 'o'))
 
-    val loadButton = button()("Load").render
+    val loadButton = button()("Load board from ascii ☝️").render
     loadButton.onclick = _ => loadBoardFromText()
 
-    val playButton = button()("Play").render
+    val playButton = button(style:= "background:green")("▷ Play").render
 
     def startAnimation() =
-      playButton.innerText = "Pause"
+      playButton.innerText = "⏸️ Pause"
+      advanceButton.disabled = true
+      playButton.style.background = "red"
       state.playHandle = window.setInterval(() => {
         updateBoard(board.advance)
       }, 150)
 
     def stopAnimation() =
       window.clearInterval(state.playHandle)
+      advanceButton.disabled = false
       state.playHandle = -1
       playButton.innerText = "Play"
+      playButton.style.background = "green"
 
     playButton.onclick = _ => {
       if state.playHandle == -1 then startAnimation() else stopAnimation()
@@ -185,7 +194,7 @@ object Grid:
       }
 
       div()(
-        label(`for` := "conwayOptions"),
+        span(style := "margin-right:10px")(label(`for` := selectButton.name)("Use Model:")),
         selectButton
       )
     }

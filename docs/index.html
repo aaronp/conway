@@ -6,10 +6,36 @@
   </head>
   <body>
     <script type="text/javascript" src="./main.js"></script>
-    <a href = "https://github.com/aaronp/conway">Code on GitHub</a>
-    <div style="text-align: center;margin-left:auto;margin-right:auto">
-      <canvas id="canvas" width="255" height="255"></canvas>
-    </div>
+    <a href="https://github.com/aaronp/conway">Code on GitHub</a>
+    <h5>About</h5>
+    <p>
+      This is a playground for experimenting with <a href="https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life">Conways
+      Game of Life</a>.
+
+      There are certain rules by which a cell in each frame either dies or is reincarnated:
+    <ol>
+      <li>Any live cell with two or three live neighbours survives.</li>
+      <li>Any dead cell with three live neighbours becomes a live cell.</li>
+      <li>All other live cells die in the next generation. Similarly, all other dead cells stay dead.</li>
+    </ol>
+    </p>
+    <h5>Configure the board</h5>
+    <p>
+      Click (or draw/drag) on the grid below to toggle cells on or off (the draw behaviour can be changed -- see 'Mouse
+      Click/Drag Behaviour' below).
+    </p>
+    <h5>Playing the game</h5>
+    <p>
+      Use the "Play" button below to start/stop the animation, or the "Advance Once" button to advance a single frame.
+    </p>
+    <h5>Loading different models</h5>
+    <p>
+      The text area below the grid shows a textual representation of the board. You can manually edit that text, then use the "Load board from ascii" button to reset the board.
+    </p>
+    <p>
+      A small sample of existing models are also available from the "Use Model" drop-down, which were taken from <a href="https://conwaylife.com/patterns">conwaylife.com/patterns</a>.
+    </p>
+    <canvas id="canvas" width="255" height="255"></canvas>
     <script>Main.apply(document.getElementById("canvas"))</script>
   </body>
 </html>
